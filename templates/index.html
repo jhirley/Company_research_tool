@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block hero %}
+<section id="hero" class="container">
+    <header>
+        <h2>Company Research Tool</h2>
+    </header>
+    <p>Thoroughly research companies using AI-powered insights</p>
+    <ul class="actions">
+        <li><a href="#setup-form" class="button">Get Started</a></li>
+    </ul>
+</section>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <section id="setup-form">
+            <header class="major">
+                <h2>Setup Your Research</h2>
+                <p>Enter your API key and the companies you want to research</p>
+            </header>
+            
+            <form method="post" action="/setup">
+                <div class="row gtr-50">
+                    <div class="col-6 col-12-mobile">
+                        <h3>OpenAI API Key</h3>
+                        <input type="password" name="openai_key" placeholder="OpenAI API Key" value="{{ api_keys.openai }}" />
+                        <p class="small">Required for GPT-4 research</p>
+                    </div>
+                    <div class="col-6 col-12-mobile">
+                        <h3>Gemini API Key</h3>
+                        <input type="password" name="gemini_key" placeholder="Gemini API Key" value="{{ api_keys.gemini }}" />
+                        <p class="small">Required for Gemini research</p>
+                    </div>
+                    <div class="col-12">
+                        <h3>Companies to Research</h3>
+                        <textarea name="companies" placeholder="Enter company names, separated by commas">{{ companies|join(', ') }}</textarea>
+                    </div>
+                    <div class="col-12">
+                        <ul class="actions">
+                            <li><input type="submit" class="button" value="Start Research" /></li>
+                        </ul>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <section>
+            <header class="major">
+                <h2>About This Tool</h2>
+            </header>
+            <div class="row features">
+                <section class="col-4 col-12-narrower feature">
+                    <div class="image-wrapper first">
+                        <img src="/static/images/research.jpg" alt="Research" class="image featured" onerror="this.onerror=null; this.src='/static/assets/css/images/pic01.jpg'" />
+                    </div>
+                    <h3>Comprehensive Research</h3>
+                    <p>Conduct thorough research on companies using AI-powered insights from various sources.</p>
+                </section>
+                <section class="col-4 col-12-narrower feature">
+                    <div class="image-wrapper">
+                        <img src="/static/images/customize.jpg" alt="Customize" class="image featured" onerror="this.onerror=null; this.src='/static/assets/css/images/pic02.jpg'" />
+                    </div>
+                    <h3>Customizable Prompts</h3>
+                    <p>Edit and customize research prompts to tailor your research to specific needs and requirements.</p>
+                </section>
+                <section class="col-4 col-12-narrower feature">
+                    <div class="image-wrapper">
+                        <img src="/static/images/export.jpg" alt="Export" class="image featured" onerror="this.onerror=null; this.src='/static/assets/css/images/pic03.jpg'" />
+                    </div>
+                    <h3>Export Results</h3>
+                    <p>Export your research results with sources to ensure accuracy and eliminate hallucinations.</p>
+                </section>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

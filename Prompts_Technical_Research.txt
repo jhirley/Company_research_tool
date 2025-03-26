@@ -1,0 +1,64 @@
+### AI Strategy
+1. Research the key components and objectives of {Customer Name}'s AI strategy. How do these align with their overall business goals? Include details on AI frameworks, machine learning models, data sources, and specific use cases.
+2. Identify the platforms and partners integral to {Customer Name}'s AI initiatives. Specify vendors and their roles. Include information on cloud providers, AI development platforms, integration partners, and any proprietary technologies used.
+3. Detail how the platforms and partners support {Customer Name}'s AI operations. Include technologies and methodologies used, such as data preprocessing, model training, deployment strategies, and ongoing maintenance.
+4. Identify the AI technologies and applications leveraged in {Customer Name}'s digital transformation strategy. Explain how these enhance business processes. Include examples of AI-driven automation, predictive analytics, customer personalization, and decision support systems.
+5. Determine how {Customer Name} monetizes AI. Identify AI-driven products or services contributing most significantly to their revenue. Include details on pricing models, subscription services, AI-powered solutions, and any unique value propositions.
+6. List the key partners in ensuring AI security and governance for {Customer Name}. Describe frameworks and practices followed, such as data privacy regulations, ethical AI guidelines, security protocols, and compliance measures.
+7. Identify the leader of {Customer Name}'s AI initiatives. Provide contact information and describe their role in shaping the AI strategy. Include information on their background, expertise, strategic vision, and any notable achievements.
+
+### Data Center Strategy
+1. Provide the physical addresses of {Customer Name}'s data centers. Include information on the size, capacity, tier classification, and any certifications (e.g., ISO, Uptime Institute) of each data center.
+2. Determine if {Customer Name} owns and operates its physical data centers or uses partners for colocation services. Describe their approach to data center management, including cooling systems, power redundancy, security measures, and sustainability practices.
+3. List {Customer Name}'s key business and operations applications. Explain how customers and end users connect to these applications. Include details on application architecture, APIs, user access protocols, and any performance optimization techniques.
+4. Provide the specific addresses of {Customer Name}'s distribution centers. Include information on the size, capacity, logistics capabilities, and any automation technologies used in each center.
+5. Describe the critical functions performed at {Customer Name}'s distribution centers. Explain how they support overall business operations. Include details on inventory management, order fulfillment, transportation logistics, and any integration with supply chain systems.
+6. Identify the leader overseeing {Customer Name}'s data center strategy. Provide contact information and describe their responsibilities. Include information on their background, expertise, strategic vision, and any notable achievements.
+
+### CSP Partners/Cloud On-Ramps
+1. List the CSPs that are part of {Customer Name}'s cloud strategy. Explain how these providers support cloud initiatives. Include details on cloud infrastructure, services offered, integration capabilities, and any multi-cloud or hybrid cloud strategies.
+2. Provide the specific locations of {Customer Name}'s cloud onramps. Include information on connectivity options, bandwidth, redundancy, and any partnerships with network providers.
+3. Identify the cloud-based services consumed by {Customer Name} and the vendors leveraged. Explain how these services integrate with business processes. Include details on SaaS, PaaS, IaaS solutions, and any custom cloud applications.
+4. Identify the leader managing {Customer Name}'s cloud strategy. Provide contact information and describe their role. Include information on their background, expertise, strategic vision, and any notable achievements.
+
+### Business Continuity and Disaster Recovery Strategy
+1. Describe the main elements of {Customer Name}'s business continuity and disaster recovery plan. Explain how operational resilience is ensured. Include details on backup solutions, recovery time objectives (RTO), recovery point objectives (RPO), and any disaster recovery testing practices.
+2. Detail the frameworks and strategies used by {Customer Name} for information security. Explain how they protect their data and systems. Include information on encryption, access controls, threat detection, incident response, and compliance with industry standards.
+3. Identify the leader of {Customer Name}'s BCDR efforts. Provide contact information and describe their responsibilities. Include information on their background, expertise, strategic vision, and any notable achievements.
+
+### WAN/Internet/SASE/SD-WAN
+1. Describe how {Customer Name} implements and operates SD-WAN technology. Specify the platform used. Include details on network architecture, traffic management, performance optimization, and any integration with existing network infrastructure.
+2. List the SD-WAN technologies operated by {Customer Name} and the platform used. Include information on vendor solutions, features, integration capabilities, and any performance metrics.
+3. Identify the network monitoring tools and software used by {Customer Name}. Specify technologies and vendors involved. Include details on monitoring capabilities, alerting mechanisms, reporting features, and any integration with security information and event management (SIEM) systems.
+4. Describe {Customer Name}'s corporate VPN strategy. Explain how work-from-home users connect to workloads. Include information on VPN protocols, security measures, user authentication, and any remote access solutions.
+5. Detail {Customer Name}'s approach to corporate security. Identify technologies and vendors used. Include information on firewalls, intrusion detection systems, endpoint protection, and any security policies or procedures.
+6. Describe {Customer Name}'s work-from-home policy. Identify technologies and vendors used. Include details on remote access solutions, collaboration tools, security measures, and any employee training programs.
+7. Explain {Customer Name}'s zero-trust approach. Identify technologies and vendors used. Include information on identity and access management, micro-segmentation, continuous monitoring, and any zero-trust architecture frameworks.
+8. Describe {Customer Name}'s wavelength or data center backbone connectivity strategy. Identify technologies and vendors used. Include details on network architecture, bandwidth, redundancy, and any partnerships with network providers.
+9. Detail {Customer Name}'s MPLS approach. Identify technologies and vendors used. Include information on network design, traffic engineering, service level agreements (SLAs), and any integration with other network technologies.
+10. Describe {Customer Name}'s business broadband strategy. Identify technologies and vendors used. Include details on connectivity options, bandwidth, redundancy, and any partnerships with network providers.
+11. Explain {Customer Name}'s 5G approach. Identify technologies and vendors used. Include information on network infrastructure, coverage, performance, and any use cases for 5G technology.
+12. Describe {Customer Name}'s strategy for replacing POTS lines. Identify technologies and vendors used. Include details on VoIP solutions, integration capabilities, cost savings, and any migration plans.
+13. Detail {Customer Name}'s local area network Ethernet switching strategy. Identify technologies and vendors used. Include information on switch models, features, network design, and any performance optimization techniques.
+14. List the managed and professional services leveraged by {Customer Name} to operate its business. Specify service providers. Include details on service offerings, contract terms, performance metrics, and any integration with internal teams.
+15. Identify the SaaS services and solutions consumed by {Customer Name}. Specify service providers. Include information on application functionality, integration capabilities, user adoption, and any performance metrics.
+16. Identify the leader managing {Customer Name}'s network and security infrastructure. Provide contact information and describe their role. Include information on their background, expertise, strategic vision, and any notable achievements.
+
+### NaaS
+1. List the locations that qualify for NaaS Internet on demand provided by www.lumen.com for {Customer Name}. Provide specific addresses. Include information on connectivity options, bandwidth, redundancy, and any partnerships with network providers.
+2. Provide the specific addresses for the locations that qualify for NaaS Internet on demand provided by www.lumen.com for {Customer Name}. Include details on connectivity options, bandwidth, redundancy, and any partnerships with network providers.
+
+### Corporate Information and Cyber Security Strategy
+1. Identify the security monitoring tools and software used by {Customer Name}. Specify technologies and vendors involved. Include details on monitoring capabilities, alerting mechanisms, reporting features, and any integration with security information and event management (SIEM) systems.
+2. Describe {Customer Name}'s corporate VPN strategy. Explain how work-from-home users connect to workloads and applications. Include information on VPN protocols, security measures, user authentication, and any remote access solutions.
+3. Detail {Customer Name}'s managed and professional services strategy for security. Identify technologies and vendors used. Include information on service offerings, contract terms, performance metrics, and any integration with internal teams.
+4. Explain {Customer Name}'s approach to corporate security. Identify technologies and vendors used. Include information on firewalls, intrusion detection systems, endpoint protection, and any security policies or procedures.
+5. Describe {Customer Name}'s DDoS approach. Identify technologies and vendors used. Include information on mitigation techniques, response strategies, and any partnerships with security providers.
+6. Detail {Customer Name}'s web application firewall (WAF) strategy. Include information on technologies, vendors, implementation practices, and any integration with other security measures.
+7. Explain {Customer Name}'s threat intelligence, detection, and response strategy. Include details on technologies, vendors, methodologies used, and any integration with security operations centers (SOCs).
+8. Describe {Customer Name}'s security consulting strategy. Identify technologies and vendors used. Include information on service offerings, contract terms, performance metrics, and any integration with internal teams.
+9. Detail {Customer Name}'s approach to firewalls. Identify technologies and vendors used. Include information on firewall models, features, implementation practices, and any integration with other security measures.
+10. Describe {Customer Name}'s work-from-home policy. Identify technologies and vendors used. Include details on remote access solutions, collaboration tools, security measures, and any employee training programs.
+ 
+
+

@@ -1,0 +1,100 @@
+#### Company Overview and History
+1. Can you provide a detailed timeline of {Customer} history, including founding date, key milestones, major achievements, and significant changes in business model?
+2. How has {Customer}'s business model evolved in response to market trends, technological advancements, and competitive pressures?
+
+#### Leadership and Key Personnel
+3. Who are the current executive leaders at {Customer}, and what are their roles, backgrounds, and contributions to the company's strategic direction?
+4. Can you highlight the technology thought-leaders at {Customer}, detailing their specific contributions to innovation and technology strategy?
+5. Could you provide contact emails for key personnel, including executives and technology leaders?
+
+#### Financial Performance
+6. What were {Customer}'s reported revenue and profit margins for each quarter of 2024, and what factors contributed to these financial results?
+7. Can you detail any major financial events, such as mergers, acquisitions, or investments, that occurred in 2024 and their impact on {Customer}'s financial performance?
+8. What key insights can be drawn from {Customer}'s 10-Q or 10-K filings, including revenue breakdowns, expense analysis, and risk factors?
+
+#### Business Operations
+9. What are the primary sources of revenue for {Customer}, broken down by product lines, services, or business segments, and what percentage does each contribute to total revenue?
+10. What specific risks or vulnerabilities are associated with each of {Customer}'s revenue streams, and how are they being addressed?
+11. What specific cost-saving measures, such as process improvements or technology investments, has {Customer} implemented to enhance financial efficiency?
+
+#### Strategic Objectives and Initiatives
+12. What are {Customer}'s strategic objectives for 2025, including specific targets for revenue growth, market expansion, and operational efficiency?
+13. Can you describe the key initiatives and long-term projects {Customer} is focusing on for the next five years, including expected outcomes and timelines?
+
+#### Market Position and Competition
+14. What external factors, such as market trends, regulatory changes, and economic conditions, and internal factors, such as operational efficiency and workforce capabilities, affect {Customer}'s market position?
+15. Can you provide a detailed SWOT analysis for {Customer}, including specific strengths, weaknesses, opportunities, and threats?
+
+#### Technology and Innovation
+16. How is {Customer} integrating AI into its operations, products, and decision-making processes, and what specific AI applications have been implemented?
+17. How does {Customer} use technology to streamline processes, innovate customer experience, and save money, including specific examples of technology solutions?
+18. What are {Customer}'s current technical initiatives, including projects to enhance technology infrastructure and capabilities?
+19. What key technologies is {Customer} investing in, and how are these technologies being integrated into operations?
+20. What steps is {Customer} taking to modernize business processes and improve efficiency, including specific strategies and technologies?
+21. What is {Customer}'s business strategy around technology, including specific goals and implementation plans?
+22. How does {Customer} approach digital transformation, and what are the key components of this strategy?
+23. What emerging technologies is {Customer} exploring, and how do you plan to integrate them into your operations?
+
+#### Customer Insights
+24. Why do customers choose {Customer}, and what challenges do you face with retention, including specific factors driving customer loyalty and any issues affecting retention?
+25. What are the common themes in customer reviews and feedback about {Customer}, including specific praises and criticisms?
+
+
+
+#### Workforce and Culture
+28. How many locations and employees does {Customer} have, and what is their geographic distribution, including specific numbers and regions?
+29. What software does {Customer} use to manage its workforce, and how does it help in workforce planning and management?
+
+#### Technology and Software
+30. What CRM platform does {Customer} use, and how does it manage customer relationships, including notable features and integrations?
+31. What ERP software does {Customer} use, and what are its notable features and integrations, including its role in operations?
+32. What other enterprise software solutions does {Customer} use, and how do they integrate with your existing systems?
+33. How does {Customer} approach software development and deployment, including methodologies and tools used?
+
+#### Cybersecurity
+34. Can you list all disclosed cybersecurity events and breaches, including dates, details, and the impact on {Customer}?
+35. What initiatives are in place to protect {Customer}'s data and systems, including specific cybersecurity protocols and technologies?
+36. How does {Customer} ensure compliance with data protection regulations, and what measures are taken to safeguard sensitive information?
+
+#### Job Opportunities
+37. What leadership and technology roles are currently open at {Customer}, including job titles, descriptions, and qualifications required?
+38. Are there any notable trends or patterns in {Customer}'s hiring practices, including specific skills or roles in demand?
+
+#### Locations
+39. Can you list all physical corporate office locations for {Customer}, including addresses and any notable features of these offices?
+40. Can you list all physical distribution center and data center locations for {Customer}, including addresses and their roles in operations?
+
+#### Meeting Preparation
+41. What key topics should the Lumen account team discuss in their meeting with {Customer}'s executive team, including specific questions and background information?
+42. Can you develop five outcome-based discovery questions for the Lumen account team to ask, focusing on uncovering {Customer}'s needs, challenges, goals, and business strategies?
+
+#### Visual Representations
+43. Can you create visual representations of the key points in this document, including charts, graphs, and infographics?
+
+#### Cloud Initiatives and Strategies
+44. What cloud services and platforms is {Customer} using to enhance operations, including specific vendors and services offered?
+45. Who are {Customer}'s cloud vendors, and what services do they offer, including notable integrations and benefits?
+46. How is {Customer} leveraging cloud technology for scalability, efficiency, and cost-effectiveness, including specific strategies and outcomes?
+
+#### Software Vendors and Partners
+47. What software vendors does {Customer} use for business operations, including names, products, and notable features?
+48. How do partnerships with software vendors benefit {Customer}, including specific examples and outcomes?
+49. How does {Customer} select and acquire software solutions, including procurement processes and criteria?
+
+#### Technical Initiatives
+50. What technical initiatives is {Customer} currently working on, including specific projects and their objectives?
+51. What key technologies is {Customer} investing in, and how are they being integrated into operations?
+52. What steps is {Customer} taking to modernize business processes and improve efficiency, including specific strategies and technologies?
+
+#### Business Strategies
+53. What is {Customer}'s business strategy around technology, including specific goals and implementation plans?
+
+#### Business Outcomes
+54. What key performance indicators does {Customer} use to measure success, including specific metrics and targets?
+55. What benefits do {Customer}'s products and services provide to customers, including specific examples and impact?
+ 
+
+
+
+
+

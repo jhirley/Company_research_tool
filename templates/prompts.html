@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block body_class %}is-preload{% endblock %}
+
+{% block hero %}
+<section id="hero" class="container">
+    <header>
+        <h2>Manage Prompts</h2>
+    </header>
+    <p>Edit and customize research prompts to tailor your research</p>
+</section>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <section>
+            <header>
+                <h3>Edit Prompts</h3>
+                <p>Modify existing prompts or add new ones to customize your research</p>
+            </header>
+            
+            <form method="post" action="/update_prompts" id="prompts-form">
+                <div class="row">
+                    <div class="col-12">
+                        <ul class="tabs">
+                            {% for category_name, categories in prompt_categories.items() %}
+                            <li><a href="#tab-{{ category_name }}" class="tab-link {% if loop.first %}active{% endif %}">{{ category_name.replace('_', ' ') }}</a></li>
+                            {% endfor %}
+                        </ul>
+                        
+                        <div class="tab-content">
+                            {% for category_name, categories in prompt_categories.items() %}
+                            <div id="tab-{{ category_name }}" class="tab-pane {% if loop.first %}active{% endif %}">
+                                <h3>{{ category_name.replace('_', ' ') }}</h3>
+                                
+                                {% for subcategory_name, prompts in categories.items() %}
+                                <div class="subcategory">
+                                    <h4>{{ subcategory_name }}</h4>
+                                    
+                                    {% for prompt in prompts %}
+                                    <div class="prompt-item">
+                                        <div class="prompt-number">{{ prompt.number }}.</div>
+                                        <div class="prompt-text">
+                                            <textarea name="prompt_{{ category_name }}_{{ subcategory_name }}_{{ prompt.number }}" rows="3">{{ prompt.text }}</textarea>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-12 actions-container">
+                        <ul class="actions">
+                            <li><input type="submit" class="button primary" value="Save Changes" /></li>
+                            <li><a href="/research" class="button">Back to Research</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tabs {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        margin-bottom: 1em;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .tabs li {
+        margin-right: 1em;
+    }
+    
+    .tabs a {
+        display: block;
+        padding: 0.5em 1em;
+        text-decoration: none;
+        border: 1px solid transparent;
+        border-bottom: none;
+    }
+    
+    .tabs a.active {
+        border-color: #ddd;
+        border-bottom-color: #fff;
+        margin-bottom: -1px;
+        background-color: #fff;
+    }
+    
+    .tab-content {
+        margin-top: 1em;
+    }
+    
+    .tab-pane {
+        display: none;
+    }
+    
+    .tab-pane.active {
+        display: block;
+    }
+    
+    .subcategory {
+        margin-bottom: 2em;
+        padding: 1em;
+        background-color: #f9f9f9;
+        border-radius: 0.5em;
+    }
+    
+    .prompt-item {
+        display: flex;
+        margin-bottom: 1em;
+    }
+    
+    .prompt-number {
+        flex: 0 0 2em;
+        font-weight: bold;
+        padding-top: 0.5em;
+    }
+    
+    .prompt-text {
+        flex: 1;
+    }
+    
+    .prompt-text textarea {
+        width: 100%;
+    }
+    
+    .actions-container {
+        margin-top: 2em;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tab functionality
+        const tabLinks = document.querySelectorAll('.tab-link');
+        
+        tabLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all tabs and panes
+                document.querySelectorAll('.tab-link').forEach(el => el.classList.remove('active'));
+                document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+                
+                // Add active class to clicked tab and corresponding pane
+                this.classList.add('active');
+                const targetId = this.getAttribute('href');
+                document.querySelector(targetId).classList.add('active');
+            });
+        });
+        
+        // Form submission
+        document.getElementById('prompts-form').addEventListener('submit', function(e) {
+            // You can add validation here if needed
+            
+            // Show saving indicator
+            const submitButton = this.querySelector('input[type="submit"]');
+            const originalValue = submitButton.value;
+            submitButton.value = 'Saving...';
+            submitButton.disabled = true;
+            
+            // Form will be submitted normally
+            // We'll restore the button state after a short delay
+            setTimeout(() => {
+                submitButton.value = originalValue;
+                submitButton.disabled = false;
+            }, 2000);
+        });
+    });
+</script>
+{% endblock %}

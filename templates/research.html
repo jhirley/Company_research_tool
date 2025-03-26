@@ -1,0 +1,494 @@
+{% extends "base.html" %}
+
+{% block body_class %}is-preload{% endblock %}
+
+{% block hero %}
+<section id="hero" class="container">
+    <header>
+        <h2>Company Research</h2>
+    </header>
+    <p>Select a company, category, and prompt to begin your research</p>
+</section>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-4 col-12-narrower">
+        <section>
+            <header>
+                <h3>Research Parameters</h3>
+            </header>
+            <form id="research-form">
+                <div class="row gtr-50">
+                    <div class="col-12">
+                        <label for="company">Company</label>
+                        <select name="company" id="company">
+                            {% for company in companies %}
+                            <option value="{{ company }}">{{ company }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label for="prompt-category">Category</label>
+                        <select name="prompt_category" id="prompt-category">
+                            {% for category_name, categories in prompt_categories.items() %}
+                            <option value="{{ category_name }}">{{ category_name.replace('_', ' ') }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label for="subcategory">Subcategory</label>
+                        <select name="subcategory" id="subcategory">
+                            <!-- Will be populated by JavaScript -->
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label for="prompt-number">Prompt</label>
+                        <select name="prompt_number" id="prompt-number">
+                            <!-- Will be populated by JavaScript -->
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <div class="row">
+                            <div class="col-6">
+                                <button type="submit" class="button">Research</button>
+                            </div>
+                            <div class="col-6">
+                                <button type="button" id="research-all-btn" class="button alt">Research All</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </section>
+        
+        <section id="research-history">
+            <header>
+                <h3>Research History</h3>
+            </header>
+            <div id="history-list">
+                <!-- Will be populated by JavaScript -->
+                <p>No research conducted yet.</p>
+            </div>
+            <div class="export-actions" style="display: none;">
+                <h4>Export Options</h4>
+                <div class="row gtr-50">
+                    <!-- <div class="col-6">
+                        <button id="export-json-btn" class="button small">JSON</button>
+                    </div> -->
+                    <div class="col-6">
+                        <button id="export-word-btn" class="button small">Word</button>
+                    </div>
+                    <div class="col-6">
+                        <button id="export-pdf-btn" class="button small">PDF</button>
+                    </div>
+                    <div class="col-6">
+                        <button id="export-excel-btn" class="button small">Excel</button>
+                    </div>
+                    <div class="col-12">
+                        <button id="export-pptx-btn" class="button small">PowerPoint</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <div class="col-8 col-12-narrower">
+        <section id="research-results">
+            <header>
+                <h3>Research Results</h3>
+            </header>
+            <div id="results-container">
+                <div class="placeholder">
+                    <p>Select a company, category, and prompt to begin your research.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Store prompt categories data
+    const promptCategories = JSON.parse('{{ prompt_categories|tojson|safe }}');
+    let researchHistory = {};
+    
+    // Function to update subcategories based on selected category
+    function updateSubcategories() {
+        const category = document.getElementById('prompt-category').value;
+        const subcategorySelect = document.getElementById('subcategory');
+        
+        // Clear existing options
+        subcategorySelect.innerHTML = '';
+        
+        // Add new options
+        if (promptCategories[category]) {
+            Object.keys(promptCategories[category]).forEach(subcategory => {
+                const option = document.createElement('option');
+                option.value = subcategory;
+                option.textContent = subcategory;
+                subcategorySelect.appendChild(option);
+            });
+            
+            // Trigger update of prompts
+            updatePrompts();
+        }
+    }
+    
+    // Function to update prompts based on selected subcategory
+    function updatePrompts() {
+        const category = document.getElementById('prompt-category').value;
+        const subcategory = document.getElementById('subcategory').value;
+        const promptSelect = document.getElementById('prompt-number');
+        
+        // Clear existing options
+        promptSelect.innerHTML = '';
+        
+        // Add new options
+        if (promptCategories[category] && promptCategories[category][subcategory]) {
+            promptCategories[category][subcategory].forEach(prompt => {
+                const option = document.createElement('option');
+                option.value = prompt.number;
+                option.textContent = `${prompt.number}. ${prompt.text.substring(0, 50)}...`;
+                promptSelect.appendChild(option);
+            });
+        }
+    }
+    
+    // Initialize form
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set up event listeners
+        document.getElementById('prompt-category').addEventListener('change', updateSubcategories);
+        document.getElementById('subcategory').addEventListener('change', updatePrompts);
+        
+        // Initialize subcategories
+        updateSubcategories();
+        
+        // Handle form submission
+        document.getElementById('research-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const company = document.getElementById('company').value;
+            const promptCategory = document.getElementById('prompt-category').value;
+            const subcategory = document.getElementById('subcategory').value;
+            const promptNumber = document.getElementById('prompt-number').value;
+            
+            // Show loading state
+            const resultsContainer = document.getElementById('results-container');
+            resultsContainer.innerHTML = '<div class="loading"><p>Researching... This may take a moment.</p></div>';
+            
+            try {
+                // Make API request
+                const formData = new FormData();
+                formData.append('company', company);
+                formData.append('prompt_category', promptCategory);
+                formData.append('subcategory', subcategory);
+                formData.append('prompt_number', promptNumber);
+                
+                const response = await fetch('/conduct_research', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    // If the server returned an error response with details
+                    throw { 
+                        message: data.error || 'Research failed', 
+                        details: data.details || '',
+                        response: response 
+                    };
+                }
+                
+                if (data.error) {
+                    // Handle case where server returns 200 but with an error property
+                    throw { 
+                        message: data.error, 
+                        details: data.details || '',
+                        response: response 
+                    };
+                }
+                
+                // Update research history
+                if (!researchHistory[company]) {
+                    researchHistory[company] = [];
+                }
+                
+                const historyItem = {
+                    company,
+                    promptCategory,
+                    subcategory,
+                    promptNumber: parseInt(promptNumber),
+                    prompt: data.prompt,
+                    result: data.result,
+                    sources: data.sources,
+                    timestamp: new Date().toISOString()
+                };
+                
+                researchHistory[company].push(historyItem);
+                updateHistoryList();
+                
+                // Display results
+                displayResults(data);
+                
+                // Show export button
+                document.querySelector('.export-actions').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error:', error);
+                let errorMessage = 'An error occurred while conducting research. Please try again.';
+                let errorDetails = '';
+                
+                // Try to parse the error response if it's a JSON
+                if (error.response) {
+                    try {
+                        const errorData = await error.response.json();
+                        if (errorData.error) {
+                            errorMessage = errorData.error;
+                        }
+                        if (errorData.details) {
+                            errorDetails = errorData.details;
+                        }
+                    } catch (e) {
+                        // If we can't parse the JSON, use the error message
+                        errorDetails = error.message || 'Unknown error';
+                    }
+                } else {
+                    errorDetails = error.message || 'Unknown error';
+                }
+                
+                resultsContainer.innerHTML = `
+                    <div class="error" style="background-color: #ffeeee; padding: 15px; border-radius: 5px; border: 1px solid #ffcccc;">
+                        <h4 style="color: #cc0000;">Research failed</h4>
+                        <p>${errorMessage}</p>
+                        ${errorDetails ? `<p class="error-details" style="font-family: monospace; background: #f8f8f8; padding: 10px; border-left: 3px solid #cc0000;">${errorDetails}</p>` : ''}
+                        <p>Please check your API key and try again. If the problem persists, try using a different API provider.</p>
+                        <p><a href="/diagnostics" class="button small">Go to Diagnostics Page</a> to test your API connections and troubleshoot issues.</p>
+                    </div>
+                `;
+            }
+        });
+        
+        // Handle Research All button
+        document.getElementById('research-all-btn').addEventListener('click', async function() {
+            const company = document.getElementById('company').value;
+            
+            // Confirm with the user
+            if (!confirm(`This will research ALL prompts for ${company}. This may take a while and consume a significant amount of API credits. Continue?`)) {
+                return;
+            }
+            
+            // Show loading state
+            const resultsContainer = document.getElementById('results-container');
+            resultsContainer.innerHTML = '<div class="loading"><p>Researching all prompts... This may take several minutes. Please do not close this page.</p></div>';
+            
+            try {
+                // Make API request
+                const formData = new FormData();
+                formData.append('company', company);
+                
+                const response = await fetch('/conduct_research_all', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw { 
+                        message: data.error || 'Research failed', 
+                        details: data.details || '',
+                        response: response 
+                    };
+                }
+                
+                if (data.error) {
+                    throw { 
+                        message: data.error, 
+                        details: data.details || '',
+                        response: response 
+                    };
+                }
+                
+                // Update history list
+                updateHistoryList();
+                
+                // Display summary results
+                resultsContainer.innerHTML = `
+                    <div class="result">
+                        <h4>Research Complete for ${company}</h4>
+                        <p>Successfully completed ${data.total_successful} research items.</p>
+                        ${data.total_errors > 0 ? `<p>Encountered ${data.total_errors} errors during research.</p>` : ''}
+                        <h5>Research Summary:</h5>
+                        <ul>
+                            ${data.results.map(result => `
+                                <li>
+                                    <strong>${result.category} - ${result.subcategory}</strong>: 
+                                    Prompt #${result.prompt_number}
+                                </li>
+                            `).join('')}
+                        </ul>
+                        ${data.errors.length > 0 ? `
+                            <h5>Errors:</h5>
+                            <ul>
+                                ${data.errors.map(error => `
+                                    <li>
+                                        <strong>${error.category} - ${error.subcategory}</strong>: 
+                                        Prompt #${error.prompt_number} - ${error.error}
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        ` : ''}
+                    </div>
+                `;
+                
+                // Show export button
+                document.querySelector('.export-actions').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error:', error);
+                let errorMessage = 'An error occurred while conducting research. Please try again.';
+                let errorDetails = '';
+                
+                if (error.response) {
+                    try {
+                        const errorData = await error.response.json();
+                        if (errorData.error) {
+                            errorMessage = errorData.error;
+                        }
+                        if (errorData.details) {
+                            errorDetails = errorData.details;
+                        }
+                    } catch (e) {
+                        errorDetails = error.message || 'Unknown error';
+                    }
+                } else {
+                    errorDetails = error.message || 'Unknown error';
+                }
+                
+                resultsContainer.innerHTML = `
+                    <div class="error" style="background-color: #ffeeee; padding: 15px; border-radius: 5px; border: 1px solid #ffcccc;">
+                        <h4 style="color: #cc0000;">Research All failed</h4>
+                        <p>${errorMessage}</p>
+                        ${errorDetails ? `<p class="error-details" style="font-family: monospace; background: #f8f8f8; padding: 10px; border-left: 3px solid #cc0000;">${errorDetails}</p>` : ''}
+                        <p>Please check your API key and try again.</p>
+                    </div>
+                `;
+            }
+        });
+        
+        // Handle export buttons
+        document.getElementById('export-json-btn').addEventListener('click', function() {
+            exportResults('json');
+        });
+        
+        document.getElementById('export-word-btn').addEventListener('click', function() {
+            exportResults('word');
+        });
+        
+        document.getElementById('export-pdf-btn').addEventListener('click', function() {
+            exportResults('pdf');
+        });
+        
+        document.getElementById('export-excel-btn').addEventListener('click', function() {
+            exportResults('excel');
+        });
+        
+        document.getElementById('export-pptx-btn').addEventListener('click', function() {
+            exportResults('pptx');
+        });
+    });
+    
+    // Function to export results in different formats
+    function exportResults(format) {
+        const company = document.getElementById('company').value;
+        if (researchHistory[company] && researchHistory[company].length > 0) {
+            // Create and open export URL
+            const url = `/export/${company}/${format}`;
+            window.open(url, '_blank');
+        } else {
+            alert('No research results to export.');
+        }
+    }
+    
+    // Function to update history list
+    function updateHistoryList() {
+        const company = document.getElementById('company').value;
+        const historyList = document.getElementById('history-list');
+        
+        if (researchHistory[company] && researchHistory[company].length > 0) {
+            let html = '<ul class="history-items">';
+            
+            researchHistory[company].forEach((item, index) => {
+                html += `
+                    <li>
+                        <a href="#" class="history-item" data-index="${index}">
+                            ${item.subcategory}: Prompt #${item.promptNumber}
+                        </a>
+                    </li>
+                `;
+            });
+            
+            html += '</ul>';
+            historyList.innerHTML = html;
+            
+            // Add event listeners to history items
+            document.querySelectorAll('.history-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const index = parseInt(this.getAttribute('data-index'));
+                    const historyItem = researchHistory[company][index];
+                    
+                    // Display the selected research result
+                    displayResults({
+                        company: historyItem.company,
+                        prompt: historyItem.prompt,
+                        result: historyItem.result,
+                        sources: historyItem.sources
+                    });
+                });
+            });
+        } else {
+            historyList.innerHTML = '<p>No research conducted yet.</p>';
+        }
+    }
+    
+    // Function to display results
+    function displayResults(data) {
+        const resultsContainer = document.getElementById('results-container');
+        
+        // Format sources
+        let sourcesHtml = '';
+        if (data.sources && data.sources.length > 0) {
+            sourcesHtml = '<h4>Sources</h4><ol>';
+            data.sources.forEach(source => {
+                sourcesHtml += `<li>${source}</li>`;
+            });
+            sourcesHtml += '</ol>';
+        }
+        
+        // Format result with markdown-like syntax
+        let formattedResult = data.result;
+        
+        // Display results
+        resultsContainer.innerHTML = `
+            <div class="result">
+                <h4>Company: ${data.company}</h4>
+                <div class="prompt">
+                    <h5>Prompt:</h5>
+                    <p>${data.prompt}</p>
+                </div>
+                <div class="response">
+                    <h5>Response:</h5>
+                    <div class="response-content">${formattedResult}</div>
+                </div>
+                <div class="sources">
+                    ${sourcesHtml}
+                </div>
+            </div>
+        `;
+    }
+</script>
+{% endblock %}

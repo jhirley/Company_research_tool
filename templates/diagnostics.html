@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}API Diagnostics - Company Research Tool{% endblock %}
+
+{% block body_class %}is-preload{% endblock %}
+
+{% block hero %}
+<section id="banner">
+    <div class="content">
+        <header>
+            <h1>API Diagnostics</h1>
+            <p>Test your API connections</p>
+        </header>
+        <p>This page helps you diagnose issues with your API connections for the Company Research Tool.</p>
+    </div>
+    <span class="image object">
+        <img src="/static/images/research.jpg" alt="API Diagnostics" />
+    </span>
+</section>
+{% endblock %}
+
+{% block content %}
+<section>
+    <header class="main">
+        <h2>API Connection Tests</h2>
+    </header>
+
+    <div class="row">
+        <div class="col-12">
+            <h3>API Keys Status</h3>
+            <div class="api-status">
+                <p><strong>OpenAI API Key:</strong> <span id="openai-status">Not tested</span></p>
+                <p><strong>Gemini API Key:</strong> <span id="gemini-status">Not tested</span></p>
+            </div>
+            
+            <button id="test-apis" class="button primary">Test API Connections</button>
+            
+            <div id="test-results" class="results-container" style="display: none; margin-top: 20px;">
+                <h3>Test Results</h3>
+                <div id="results-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" style="margin-top: 30px;">
+        <div class="col-12">
+            <h3>Troubleshooting Steps</h3>
+            <ol>
+                <li>Ensure your API keys are correctly entered on the home page.</li>
+                <li>Check that your API keys are valid and have not expired.</li>
+                <li>Verify that you have sufficient credits or quota for the API services.</li>
+                <li>If using OpenAI, ensure your account has access to the models being used (GPT-4).</li>
+                <li>If using Gemini, ensure your account has access to the Gemini API.</li>
+                <li>Check your internet connection to ensure you can reach the API services.</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="row" style="margin-top: 30px;">
+        <div class="col-12">
+            <h3>Manual API Test</h3>
+            <div class="row gtr-uniform">
+                <div class="col-6">
+                    <select id="api-provider" name="api-provider">
+                        <option value="openai">OpenAI</option>
+                        <option value="gemini">Gemini</option>
+                    </select>
+                </div>
+                <div class="col-6">
+                    <button id="run-manual-test" class="button">Run Manual Test</button>
+                </div>
+                <div class="col-12">
+                    <textarea id="manual-test-result" rows="10" readonly style="width: 100%; margin-top: 10px; background-color: #f8f8f8;"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Test APIs button
+        document.getElementById('test-apis').addEventListener('click', async function() {
+            const resultsContainer = document.getElementById('test-results');
+            const resultsContent = document.getElementById('results-content');
+            
+            // Show loading state
+            resultsContainer.style.display = 'block';
+            resultsContent.innerHTML = '<p>Testing API connections... Please wait.</p>';
+            
+            try {
+                const response = await fetch('/api/test');
+                const data = await response.json();
+                
+                // Update status indicators
+                const openaiStatus = document.getElementById('openai-status');
+                const geminiStatus = document.getElementById('gemini-status');
+                
+                // Format OpenAI results
+                let openaiHtml = '';
+                if (data.openai.status === 'ok') {
+                    openaiStatus.textContent = '✅ Connected';
+                    openaiStatus.style.color = 'green';
+                    openaiHtml = `
+                        <div class="api-result success">
+                            <h4>OpenAI API: Success</h4>
+                            <p><strong>Model:</strong> ${data.openai.model}</p>
+                            <p><strong>Test Response:</strong> "${data.openai.response}"</p>
+                        </div>
+                    `;
+                } else if (data.openai.status === 'error') {
+                    openaiStatus.textContent = '❌ Error';
+                    openaiStatus.style.color = 'red';
+                    openaiHtml = `
+                        <div class="api-result error" style="background-color: #ffeeee; padding: 15px; border-radius: 5px; border: 1px solid #ffcccc; margin-bottom: 20px;">
+                            <h4 style="color: #cc0000;">OpenAI API: Error</h4>
+                            <p><strong>Error Message:</strong></p>
+                            <pre style="background: #f8f8f8; padding: 10px; overflow-x: auto;">${data.openai.error}</pre>
+                            <p><strong>Key Length:</strong> ${data.openai.key_length} characters</p>
+                            <p><strong>Troubleshooting:</strong></p>
+                            <ul>
+                                <li>Check if your API key is valid and correctly formatted</li>
+                                <li>Ensure you have access to the requested model</li>
+                                <li>Verify you have sufficient credits in your OpenAI account</li>
+                            </ul>
+                        </div>
+                    `;
+                } else {
+                    openaiStatus.textContent = '⚠️ Not configured';
+                    openaiStatus.style.color = 'orange';
+                    openaiHtml = `
+                        <div class="api-result warning">
+                            <h4>OpenAI API: Not Configured</h4>
+                            <p>No API key provided for OpenAI. Add your key on the home page to use OpenAI services.</p>
+                        </div>
+                    `;
+                }
+                
+                // Format Gemini results
+                let geminiHtml = '';
+                if (data.gemini.status === 'ok') {
+                    geminiStatus.textContent = '✅ Connected';
+                    geminiStatus.style.color = 'green';
+                    geminiHtml = `
+                        <div class="api-result success">
+                            <h4>Gemini API: Success</h4>
+                            <p><strong>Model:</strong> ${data.gemini.model}</p>
+                            <p><strong>Test Response:</strong> "${data.gemini.response}"</p>
+                        </div>
+                    `;
+                } else if (data.gemini.status === 'error') {
+                    geminiStatus.textContent = '❌ Error';
+                    geminiStatus.style.color = 'red';
+                    geminiHtml = `
+                        <div class="api-result error" style="background-color: #ffeeee; padding: 15px; border-radius: 5px; border: 1px solid #ffcccc;">
+                            <h4 style="color: #cc0000;">Gemini API: Error</h4>
+                            <p><strong>Error Message:</strong></p>
+                            <pre style="background: #f8f8f8; padding: 10px; overflow-x: auto;">${data.gemini.error}</pre>
+                            <p><strong>Key Length:</strong> ${data.gemini.key_length} characters</p>
+                            <p><strong>Troubleshooting:</strong></p>
+                            <ul>
+                                <li>Check if your API key is valid and correctly formatted</li>
+                                <li>Ensure you have enabled the Gemini API in your Google AI Studio</li>
+                                <li>Verify you have sufficient quota for the Gemini API</li>
+                            </ul>
+                        </div>
+                    `;
+                } else {
+                    geminiStatus.textContent = '⚠️ Not configured';
+                    geminiStatus.style.color = 'orange';
+                    geminiHtml = `
+                        <div class="api-result warning">
+                            <h4>Gemini API: Not Configured</h4>
+                            <p>No API key provided for Gemini. Add your key on the home page to use Gemini services.</p>
+                        </div>
+                    `;
+                }
+                
+                // Display results
+                resultsContent.innerHTML = openaiHtml + geminiHtml;
+                
+            } catch (error) {
+                console.error('Error:', error);
+                resultsContent.innerHTML = `
+                    <div class="error" style="background-color: #ffeeee; padding: 15px; border-radius: 5px; border: 1px solid #ffcccc;">
+                        <h4 style="color: #cc0000;">Test Failed</h4>
+                        <p>An error occurred while testing the API connections:</p>
+                        <pre style="background: #f8f8f8; padding: 10px;">${error.message}</pre>
+                    </div>
+                `;
+            }
+        });
+        
+        // Manual test button
+        document.getElementById('run-manual-test').addEventListener('click', async function() {
+            const provider = document.getElementById('api-provider').value;
+            const resultArea = document.getElementById('manual-test-result');
+            
+            resultArea.value = `Running manual test for ${provider}...\n`;
+            
+            try {
+                const response = await fetch(`/api/manual-test?provider=${provider}`);
+                const data = await response.json();
+                
+                resultArea.value += `\nTest completed.\n\n`;
+                resultArea.value += JSON.stringify(data, null, 2);
+                
+            } catch (error) {
+                resultArea.value += `\nTest failed with error:\n${error.message}\n`;
+                console.error('Error:', error);
+            }
+        });
+    });
+</script>
+{% endblock %}
