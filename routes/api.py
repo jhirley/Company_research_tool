@@ -63,29 +63,29 @@ async def test_api():
             result = {"status": "testing"}
             
             # Initialize client
-            client = genai.Client(api_key=api_keys["gemini"])
+            genai.configure(api_key=api_keys["gemini"])
             
             # List available models
             result["step"] = "Listing available models"
             
             async def list_models():
                 try:
-                    models = client.models.list()
+                    models = genai.list_models()
                     return [model.name for model in models]
                 except Exception as e:
                     return [f"Error listing models: {str(e)}"]
             
-            result["available_models"] = await asyncio.to_thread(list_models)
+            result["available_models"] = await list_models()
             
             # Test with a simple prompt
             result["step"] = "Testing content generation with multiple model formats"
             
             # Try different model formats
             models_to_try = [
-                "models/gemini-1.5-pro",  # Full path format
-                "models/gemini-pro",      # Full path format
-                "gemini-1.5-pro",         # Short name format
-                "gemini-pro"              # Short name format
+                "gemini-1.5-pro",  # Latest model
+                "gemini-1.5-flash", # Faster model
+                "gemini-pro",      # Older model
+                "gemini-pro-vision" # Vision model
             ]
             
             result["model_tests"] = {}
@@ -93,9 +93,9 @@ async def test_api():
             
             async def test_model(model_name):
                 try:
-                    response = client.models.generate_content(
-                        model=model_name,
-                        contents="Say hello in exactly 5 words."
+                    model = genai.GenerativeModel(model_name)
+                    response = await model.generate_content_async(
+                        "Say hello in exactly 5 words."
                     )
                     return {
                         "status": "success",
@@ -108,30 +108,17 @@ async def test_api():
                     }
             
             for model in models_to_try:
-                # Create a function that captures the current model name
-                async def test_current_model(model_name=model):
-                    return await test_model(model_name)
+                # Test this model
+                model_result = await test_model(model)
                 
-                # Run the test for this model
-                model_result = await asyncio.to_thread(lambda m=model: client.models.generate_content(
-                    model=m,
-                    contents="Say hello in exactly 5 words."
-                ))
-                
-                try:
-                    result["model_tests"][model] = {
-                        "status": "success",
-                        "response": model_result.text
-                    }
+                if model_result["status"] == "success":
+                    result["model_tests"][model] = model_result
                     working_model = model
                     result["working_model"] = model
                     # Break once we find a working model
                     break
-                except Exception as e:
-                    result["model_tests"][model] = {
-                        "status": "error",
-                        "error": str(e)
-                    }
+                else:
+                    result["model_tests"][model] = model_result
             
             if working_model:
                 result["test_response"] = result["model_tests"][working_model]["response"]
@@ -190,25 +177,31 @@ async def manual_test(provider: str):
             import google.generativeai as genai
             
             # Initialize client
-            client = genai.Client(api_key=api_keys["gemini"])
+            genai.configure(api_key=api_keys["gemini"])
             
             # Try with a working model (gemini-pro is most reliable)
-            model = "gemini-pro"
+            model_name = "gemini-pro"
             
             # Test with a simple prompt
-            response = await asyncio.to_thread(
-                lambda: client.models.generate_content(
-                    model=model,
-                    contents="Say hello in exactly 5 words."
-                )
-            )
+            async def test_model():
+                try:
+                    model = genai.GenerativeModel(model_name)
+                    response = await model.generate_content_async(
+                        "Say hello in exactly 5 words."
+                    )
+                    return {
+                        "status": "success",
+                        "model": model_name,
+                        "response": response.text,
+                        "full_response": json.loads(json.dumps(response._raw_response))
+                    }
+                except Exception as e:
+                    return {
+                        "status": "error",
+                        "error": str(e)
+                    }
             
-            return {
-                "status": "success",
-                "model": model,
-                "response": response.text,
-                "full_response": json.loads(json.dumps(response._raw_response))
-            }
+            return await test_model()
         except Exception as e:
             return {
                 "status": "error",

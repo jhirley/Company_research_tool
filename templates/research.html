@@ -380,34 +380,66 @@
         });
         
         // Handle export buttons
-        document.getElementById('export-json-btn').addEventListener('click', function() {
-            exportResults('json');
+        // JSON button is commented out in the HTML
+        // document.getElementById('export-json-btn').addEventListener('click', function() {
+        //     exportResults('json');
+        // });
+        
+        document.getElementById('export-word-btn').addEventListener('click', async function() {
+            await exportResults('word');
         });
         
-        document.getElementById('export-word-btn').addEventListener('click', function() {
-            exportResults('word');
+        document.getElementById('export-pdf-btn').addEventListener('click', async function() {
+            await exportResults('pdf');
         });
         
-        document.getElementById('export-pdf-btn').addEventListener('click', function() {
-            exportResults('pdf');
+        document.getElementById('export-excel-btn').addEventListener('click', async function() {
+            await exportResults('excel');
         });
         
-        document.getElementById('export-excel-btn').addEventListener('click', function() {
-            exportResults('excel');
-        });
-        
-        document.getElementById('export-pptx-btn').addEventListener('click', function() {
-            exportResults('pptx');
+        document.getElementById('export-pptx-btn').addEventListener('click', async function() {
+            await exportResults('pptx');
         });
     });
     
     // Function to export results in different formats
-    function exportResults(format) {
+    async function exportResults(format) {
         const company = document.getElementById('company').value;
+        console.log(`Exporting for company: ${company} in format: ${format}`);
+        console.log(`Research history for company:`, researchHistory[company]);
+        
         if (researchHistory[company] && researchHistory[company].length > 0) {
-            // Create and open export URL
-            const url = `/export/${company}/${format}`;
-            window.open(url, '_blank');
+            try {
+                // First sync the research history with the backend
+                console.log('Syncing research history with backend...');
+                const syncResponse = await fetch('/sync_research_history', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        company: company,
+                        history: researchHistory[company]
+                    })
+                });
+                
+                if (!syncResponse.ok) {
+                    const errorData = await syncResponse.json();
+                    console.error('Error syncing research history:', errorData);
+                    alert(`Error syncing research data: ${errorData.error || 'Unknown error'}`);
+                    return;
+                }
+                
+                console.log('Research history synced successfully');
+                
+                // Now open the export URL
+                const url = `/export/${company}/${format}`;
+                console.log(`Opening URL: ${url}`);
+                window.open(url, '_blank');
+            } catch (error) {
+                console.error('Error during export process:', error);
+                alert(`Export failed: ${error.message || 'Unknown error'}`);
+            }
         } else {
             alert('No research results to export.');
         }

@@ -1,9 +1,12 @@
-from fastapi import APIRouter, Request, Form, HTTPException
+from fastapi import APIRouter, Request, Form, HTTPException, Body
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 import asyncio
 import re
+import logging
 from models.models import api_keys, current_companies, research_results, prompt_categories
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -173,6 +176,9 @@ async def conduct_research(
             "category": prompt_category,
             "subcategory": subcategory
         })
+    
+    # Log the current state of research_results for debugging
+    logger.info(f"Updated research_results for {company}. Now has {len(research_results[company])} entries.")
     
     # Return the research results
     return {
@@ -388,44 +394,45 @@ async def conduct_research_gemini(prompt: str, company: str):
         
         print(f"Sending prompt to Gemini: {prompt[:50]}...")
         
-        # Make the API call using synchronous code wrapped in asyncio.to_thread
-        def generate_sync():
-            try:
-                # Try with different model names to find one that works
-                models_to_try = [
-                    "gemini-1.5-pro",
-                    "gemini-1.5-flash",
-                    "gemini-pro",
-                    "gemini-pro-vision"
-                ]
-                
-                last_error = None
-                for model_name in models_to_try:
-                    try:
-                        print(f"Attempting to use Gemini model: {model_name}")
-                        model = genai.GenerativeModel(model_name)
-                        response = model.generate_content(
-                            [system_prompt, prompt],
-                            generation_config={"temperature": 0.3}  # Lower temperature for more factual responses
-                        )
-                        print(f"Successfully received response from Gemini model: {model_name}")
-                        return response
-                    except Exception as model_error:
-                        last_error = model_error
-                        print(f"Error with model {model_name}: {str(model_error)}")
-                
-                # If we get here, all models failed
-                raise Exception(f"All Gemini models failed. Last error: {str(last_error)}")
-            except Exception as api_error:
-                print(f"Error during Gemini API call: {str(api_error)}")
-                print(f"Error details: {traceback.format_exc()}")
-                raise Exception(f"Gemini API call failed: {str(api_error)}")
+        # Make the API call using proper async handling
+        async def try_models():
+            # Try with different model names to find one that works
+            models_to_try = [
+                "gemini-1.5-pro",
+                "gemini-1.5-flash",
+                "gemini-pro",
+                "gemini-pro-vision"
+            ]
+            
+            last_error = None
+            for model_name in models_to_try:
+                try:
+                    print(f"Attempting to use Gemini model: {model_name}")
+                    
+                    # Create the model
+                    model = genai.GenerativeModel(model_name)
+                    
+                    # Use the asynchronous API
+                    response = await model.generate_content_async(
+                        [system_prompt, prompt],
+                        generation_config={"temperature": 0.3}  # Lower temperature for more factual responses
+                    )
+                    
+                    print(f"Successfully received response from Gemini model: {model_name}")
+                    return response
+                except Exception as model_error:
+                    last_error = model_error
+                    print(f"Error with model {model_name}: {str(model_error)}")
+            
+            # If we get here, all models failed
+            raise Exception(f"All Gemini models failed. Last error: {str(last_error)}")
         
-        # Run the synchronous function in a thread pool
-        response = await asyncio.to_thread(generate_sync)
+        # Call the async function
+        response = await try_models()
         
         # Extract the response text
         try:
+            # Access the text from the response
             result = response.text
             print(f"Received result of length: {len(result)} characters")
         except Exception as text_error:
@@ -455,3 +462,25 @@ async def conduct_research_gemini(prompt: str, company: str):
         print(f"Gemini API error: {str(e)}")
         print(f"Full error details: {traceback.format_exc()}")
         raise Exception(f"Error with Gemini API: {str(e)}")
+
+
+@router.post("/sync_research_history")
+async def sync_research_history(data: dict = Body(...)):
+    """Sync the frontend research history with the backend research_results"""
+    company = data.get("company")
+    history = data.get("history")
+    
+    logger.info(f"Syncing research history for company: {company}")
+    logger.info(f"Received {len(history) if history else 0} history items")
+    
+    if not company or not history:
+        return JSONResponse(
+            status_code=400,
+            content={"error": "Missing company or history data"}
+        )
+    
+    # Update the backend research_results with the frontend history
+    research_results[company] = history
+    
+    logger.info(f"Successfully synced research history for {company}. Now has {len(research_results[company])} entries.")
+    return JSONResponse(content={"status": "success"})

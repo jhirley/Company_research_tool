@@ -4,12 +4,20 @@ from io import BytesIO
 from datetime import datetime
 from collections import defaultdict
 from models.models import research_results
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
 @router.get("/export/{company}")
 async def export_results(company: str):
+    logger.info(f"Export requested for company: {company}")
+    logger.info(f"Available companies in research_results: {list(research_results.keys())}")
+    
     if company not in research_results:
+        logger.error(f"No research results found for company: {company}")
         raise HTTPException(status_code=404, detail="No research results found for this company")
     
     # Create a formatted export
@@ -18,10 +26,14 @@ async def export_results(company: str):
         "research_results": research_results[company]
     }
     
+    logger.info(f"Successfully exported JSON data for company: {company}")
     return JSONResponse(content=export_data)
 
 @router.get("/export/{company}/{format}")
 async def export_results_format(company: str, format: str):
+    logger.info(f"Export requested for company: {company} in format: {format}")
+    logger.info(f"Available companies in research_results: {list(research_results.keys())}")
+
     if company not in research_results:
         raise HTTPException(status_code=404, detail="No research results found for this company")
     
@@ -43,7 +55,7 @@ async def export_results_format(company: str, format: str):
         
         # Add each research result to the document
         for result in research_results[company]:
-            doc.add_heading(f"Category: {result['category']} - {result['subcategory']}", 1)
+            doc.add_heading(f"Category: {result['promptCategory']} - {result['subcategory']}", 1)
             doc.add_paragraph(f"Prompt: {result['prompt']}")
             doc.add_paragraph(result['result'])
             if result.get('sources'):
@@ -80,7 +92,7 @@ async def export_results_format(company: str, format: str):
         for result in research_results[company]:
             pdf.add_page()
             pdf.set_font("Arial", "B", 14)
-            pdf.cell(0, 10, f"Category: {result['category']} - {result['subcategory']}", 0, 1)
+            pdf.cell(0, 10, f"Category: {result['promptCategory']} - {result['subcategory']}", 0, 1)
             
             pdf.set_font("Arial", "B", 12)
             pdf.cell(0, 10, "Prompt:", 0, 1)
@@ -124,7 +136,7 @@ async def export_results_format(company: str, format: str):
         summary_data = []
         for result in research_results[company]:
             summary_data.append({
-                "Category": result['category'],
+                "Category": result['promptCategory'],
                 "Subcategory": result['subcategory'],
                 "Prompt": result['prompt'][:100] + "..." if len(result['prompt']) > 100 else result['prompt']
             })
@@ -220,7 +232,7 @@ async def export_results_format(company: str, format: str):
         # Organize research results by subcategory
         subcategory_results = defaultdict(list)
         for result in research_results[company]:
-            key = f"{result['category']} - {result['subcategory']}"
+            key = f"{result['promptCategory']} - {result['subcategory']}"
             subcategory_results[key].append(result)
         
         # Add content slides - one per subcategory
