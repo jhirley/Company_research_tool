@@ -1,5 +1,57 @@
 {% extends "base.html" %}
 
+{% block extra_css %}
+<style>
+    .progress-container {
+        margin-bottom: 2em;
+    }
+    
+    .progress-bar-container {
+        width: 100%;
+        height: 20px;
+        background-color: #f0f0f0;
+        border-radius: 10px;
+        margin: 1em 0;
+        overflow: hidden;
+    }
+    
+    .progress-bar {
+        height: 100%;
+        background-color: #4acaa8; /* Match the theme color */
+        border-radius: 10px;
+        transition: width 0.3s ease;
+    }
+    
+    .progress-text {
+        font-size: 0.9em;
+        color: #555;
+        margin-bottom: 1em;
+    }
+    
+    .live-results, .live-errors {
+        margin-top: 1em;
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #eee;
+        padding: 0.5em 1em;
+        border-radius: 5px;
+    }
+    
+    .live-errors {
+        background-color: #fff0f0;
+    }
+    
+    .success-list li, .error-list li {
+        margin-bottom: 0.5em;
+        font-size: 0.9em;
+    }
+    
+    .error-list li {
+        color: #cc0000;
+    }
+</style>
+{% endblock %}
+
 {% block body_class %}is-preload{% endblock %}
 
 {% block hero %}
@@ -265,7 +317,6 @@
                         <p>${errorMessage}</p>
                         ${errorDetails ? `<p class="error-details" style="font-family: monospace; background: #f8f8f8; padding: 10px; border-left: 3px solid #cc0000;">${errorDetails}</p>` : ''}
                         <p>Please check your API key and try again. If the problem persists, try using a different API provider.</p>
-                        <p><a href="/diagnostics" class="button small">Go to Diagnostics Page</a> to test your API connections and troubleshoot issues.</p>
                     </div>
                 `;
             }
@@ -289,30 +340,173 @@
                 const formData = new FormData();
                 formData.append('company', company);
                 
+                // Create a progress container
+                const progressContainer = document.createElement('div');
+                progressContainer.className = 'progress-container';
+                progressContainer.innerHTML = `
+                    <h4>Research Progress for ${company}</h4>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 0%;"></div>
+                    </div>
+                    <p class="progress-text">Starting research...</p>
+                    <div class="live-results">
+                        <h5>Live Results:</h5>
+                        <ul class="success-list"></ul>
+                    </div>
+                    <div class="live-errors" style="display: none;">
+                        <h5>Errors:</h5>
+                        <ul class="error-list"></ul>
+                    </div>
+                `;
+                resultsContainer.innerHTML = '';
+                resultsContainer.appendChild(progressContainer);
+                
+                // Set a longer timeout for the Research All request
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 600000); // 10-minute timeout
+                
                 const response = await fetch('/conduct_research_all', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    signal: controller.signal
                 });
                 
-                const data = await response.json();
+                clearTimeout(timeoutId);
                 
                 if (!response.ok) {
                     throw { 
-                        message: data.error || 'Research failed', 
-                        details: data.details || '',
+                        message: 'Research failed', 
+                        details: 'Server returned an error response',
                         response: response 
                     };
                 }
                 
-                if (data.error) {
-                    throw { 
-                        message: data.error, 
-                        details: data.details || '',
-                        response: response 
+                // Process the streaming response
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+                let finalData = null;
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    
+                    if (done) {
+                        break;
+                    }
+                    
+                    // Decode the chunk and add to buffer
+                    buffer += decoder.decode(value, { stream: true });
+                    
+                    // Process complete lines in the buffer
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop(); // Keep the last incomplete line in the buffer
+                    
+                    for (const line of lines) {
+                        if (line.trim() === '') continue;
+                        
+                        try {
+                            const eventData = JSON.parse(line);
+                            
+                            // Handle different event types
+                            if (eventData.type === 'progress') {
+                                // Update progress bar
+                                const progressBar = progressContainer.querySelector('.progress-bar');
+                                progressBar.style.width = `${eventData.percent}%`;
+                                
+                                // Update progress text
+                                const progressText = progressContainer.querySelector('.progress-text');
+                                progressText.textContent = eventData.message;
+                                
+                                // Add new results to the live results list
+                                if (eventData.batch_results) {
+                                    const successList = progressContainer.querySelector('.success-list');
+                                    const errorList = progressContainer.querySelector('.error-list');
+                                    
+                                    // Add successes
+                                    eventData.batch_results.successes.forEach(success => {
+                                        const li = document.createElement('li');
+                                        li.innerHTML = `<strong>${success.category} - ${success.subcategory}</strong>: Prompt #${success.prompt_number}`;
+                                        successList.appendChild(li);
+                                    });
+                                    
+                                    // Add errors
+                                    if (eventData.batch_results.errors.length > 0) {
+                                        progressContainer.querySelector('.live-errors').style.display = 'block';
+                                        eventData.batch_results.errors.forEach(error => {
+                                            const li = document.createElement('li');
+                                            li.innerHTML = `<strong>${error.category} - ${error.subcategory}</strong>: Prompt #${error.prompt_number} - ${error.error}`;
+                                            errorList.appendChild(li);
+                                        });
+                                    }
+                                }
+                            } else if (eventData.type === 'error') {
+                                throw { 
+                                    message: eventData.error, 
+                                    details: eventData.details || ''
+                                };
+                            } else if (eventData.type === 'complete') {
+                                // Store the final data for processing after the stream ends
+                                finalData = eventData;
+                            }
+                        } catch (parseError) {
+                            console.error('Error parsing event data:', parseError, line);
+                        }
+                    }
+                }
+                
+                // Process the final data
+                if (!finalData) {
+                    throw {
+                        message: 'Research incomplete',
+                        details: 'The server did not send complete data'
                     };
                 }
                 
-                // Update history list
+                const data = finalData;
+                
+                // Process and store the results in the frontend research history
+                if (!researchHistory[company]) {
+                    researchHistory[company] = [];
+                }
+                
+                // Add all successful research results to the frontend history
+                data.results.forEach(result => {
+                    // Check if this result already exists in the history
+                    const existingIndex = researchHistory[company].findIndex(item => 
+                        item.category === result.category && 
+                        item.subcategory === result.subcategory && 
+                        item.prompt === result.prompt
+                    );
+                    
+                    if (existingIndex >= 0) {
+                        // Update existing entry
+                        researchHistory[company][existingIndex] = {
+                            prompt: result.prompt,
+                            result: result.result,
+                            sources: result.sources,
+                            category: result.category,
+                            subcategory: result.subcategory,
+                            promptCategory: result.category,
+                            promptNumber: result.prompt_number
+                        };
+                    } else {
+                        // Add new entry
+                        researchHistory[company].push({
+                            prompt: result.prompt,
+                            result: result.result,
+                            sources: result.sources,
+                            category: result.category,
+                            subcategory: result.subcategory,
+                            promptCategory: result.category,
+                            promptNumber: result.prompt_number
+                        });
+                    }
+                });
+                
+                // Sync the updated history with the backend
+                syncResearchHistory(company);
+                
+                // Update history list in the UI
                 updateHistoryList();
                 
                 // Display summary results
@@ -352,7 +546,16 @@
                 let errorMessage = 'An error occurred while conducting research. Please try again.';
                 let errorDetails = '';
                 
-                if (error.response) {
+                // Check for specific error types
+                if (error.name === 'AbortError') {
+                    errorMessage = 'The request timed out after 10 minutes.';
+                    errorDetails = 'The server might still be processing your request in the background. Check the research history later to see if any results were saved.';
+                } 
+                else if (error.message && (error.message.includes('NetworkError') || error.message.includes('network'))) {
+                    errorMessage = 'NetworkError when attempting to fetch resource.';
+                    errorDetails = 'Please check your internet connection and try again. The server might still be processing your request in the background.';
+                }
+                else if (error.response) {
                     try {
                         const errorData = await error.response.json();
                         if (errorData.error) {
@@ -366,6 +569,15 @@
                     }
                 } else {
                     errorDetails = error.message || 'Unknown error';
+                }
+                
+                // Attempt to sync research history in case some results were saved
+                try {
+                    const company = document.getElementById('company').value;
+                    syncResearchHistory(company);
+                    updateHistoryList();
+                } catch (syncError) {
+                    console.error('Error syncing research history:', syncError);
                 }
                 
                 resultsContainer.innerHTML = `
@@ -410,26 +622,8 @@
         
         if (researchHistory[company] && researchHistory[company].length > 0) {
             try {
-                // First sync the research history with the backend
-                console.log('Syncing research history with backend...');
-                const syncResponse = await fetch('/sync_research_history', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        company: company,
-                        history: researchHistory[company]
-                    })
-                });
-                
-                if (!syncResponse.ok) {
-                    const errorData = await syncResponse.json();
-                    console.error('Error syncing research history:', errorData);
-                    alert(`Error syncing research data: ${errorData.error || 'Unknown error'}`);
-                    return;
-                }
-                
+                // Use the syncResearchHistory function to sync with backend
+                await syncResearchHistory(company);
                 console.log('Research history synced successfully');
                 
                 // Now open the export URL
@@ -445,6 +639,50 @@
         }
     }
     
+    // Function to sync research history with backend
+    async function syncResearchHistory(company) {
+        try {
+            // Make sure we have the company in the research history
+            if (!researchHistory[company]) {
+                researchHistory[company] = [];
+            }
+            
+            // Ensure all entries have both category and promptCategory fields for compatibility
+            researchHistory[company].forEach(item => {
+                if (item.category && !item.promptCategory) {
+                    item.promptCategory = item.category;
+                } else if (item.promptCategory && !item.category) {
+                    item.category = item.promptCategory;
+                }
+            });
+            
+            console.log(`Syncing ${researchHistory[company].length} research entries for ${company}`);
+            
+            const response = await fetch('/sync_research_history', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    company: company,
+                    history: researchHistory[company] || []
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Error syncing research history:', errorData);
+                throw new Error(errorData.error || 'Failed to sync research history');
+            }
+            
+            console.log('Research history synced successfully');
+            return true;
+        } catch (error) {
+            console.error('Error syncing research history:', error);
+            throw error;
+        }
+    }
+    
     // Function to update history list
     function updateHistoryList() {
         const company = document.getElementById('company').value;
@@ -453,14 +691,40 @@
         if (researchHistory[company] && researchHistory[company].length > 0) {
             let html = '<ul class="history-items">';
             
+            // Group research results by category and subcategory for better organization
+            const groupedResults = {};
+            
             researchHistory[company].forEach((item, index) => {
-                html += `
-                    <li>
-                        <a href="#" class="history-item" data-index="${index}">
-                            ${item.subcategory}: Prompt #${item.promptNumber}
-                        </a>
-                    </li>
-                `;
+                const category = item.category || item.promptCategory || 'Unknown';
+                const subcategory = item.subcategory || 'Unknown';
+                const key = `${category}|${subcategory}`;
+                
+                if (!groupedResults[key]) {
+                    groupedResults[key] = [];
+                }
+                
+                groupedResults[key].push({
+                    index: index,
+                    item: item
+                });
+            });
+            
+            // Display grouped results
+            Object.keys(groupedResults).sort().forEach(key => {
+                const [category, subcategory] = key.split('|');
+                
+                html += `<li class="category-header"><strong>${category} - ${subcategory}</strong></li>`;
+                
+                groupedResults[key].forEach(entry => {
+                    const promptNumber = entry.item.promptNumber || 'Unknown';
+                    html += `
+                        <li>
+                            <a href="#" class="history-item" data-index="${entry.index}">
+                                Prompt #${promptNumber}
+                            </a>
+                        </li>
+                    `;
+                });
             });
             
             html += '</ul>';
@@ -475,10 +739,12 @@
                     
                     // Display the selected research result
                     displayResults({
-                        company: historyItem.company,
+                        company: company,
                         prompt: historyItem.prompt,
                         result: historyItem.result,
-                        sources: historyItem.sources
+                        sources: historyItem.sources,
+                        category: historyItem.category || historyItem.promptCategory,
+                        subcategory: historyItem.subcategory
                     });
                 });
             });
@@ -490,6 +756,12 @@
     // Function to display results
     function displayResults(data) {
         const resultsContainer = document.getElementById('results-container');
+        
+        // Format category and subcategory information if available
+        let categoryInfo = '';
+        if (data.category && data.subcategory) {
+            categoryInfo = `<h4>Category: ${data.category} - ${data.subcategory}</h4>`;
+        }
         
         // Format sources
         let sourcesHtml = '';
@@ -508,6 +780,7 @@
         resultsContainer.innerHTML = `
             <div class="result">
                 <h4>Company: ${data.company}</h4>
+                ${categoryInfo}
                 <div class="prompt">
                     <h5>Prompt:</h5>
                     <p>${data.prompt}</p>

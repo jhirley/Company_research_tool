@@ -42,4 +42,6 @@ async def startup_event():
 # Run the application
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # When using reload=True, we need to use the import string format
+    # instead of passing the app object directly
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)

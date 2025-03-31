@@ -27,16 +27,19 @@
                             {% for category_name, categories in prompt_categories.items() %}
                             <li><a href="#tab-{{ category_name }}" class="tab-link {% if loop.first %}active{% endif %}">{{ category_name.replace('_', ' ') }}</a></li>
                             {% endfor %}
+                            <li><button type="button" id="add-category-btn" class="button small">+ Add Category</button></li>
                         </ul>
                         
                         <div class="tab-content">
                             {% for category_name, categories in prompt_categories.items() %}
                             <div id="tab-{{ category_name }}" class="tab-pane {% if loop.first %}active{% endif %}">
                                 <h3>{{ category_name.replace('_', ' ') }}</h3>
+                                <button type="button" class="add-subcategory-btn" data-category="{{ category_name }}">+ Add Subcategory</button>
                                 
                                 {% for subcategory_name, prompts in categories.items() %}
                                 <div class="subcategory">
                                     <h4>{{ subcategory_name }}</h4>
+                                    <button type="button" class="add-prompt-btn small" data-category="{{ category_name }}" data-subcategory="{{ subcategory_name }}">+ Add Prompt</button>
                                     
                                     {% for prompt in prompts %}
                                     <div class="prompt-item">
@@ -61,6 +64,75 @@
                     </div>
                 </div>
             </form>
+            
+            <!-- Modal for adding new category -->
+            <div id="add-category-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close-modal" data-modal="add-category-modal">&times;</span>
+                    <h4>Add New Category</h4>
+                    <form id="add-category-form">
+                        <div class="row gtr-uniform">
+                            <div class="col-12">
+                                <input type="text" name="new_category_name" id="new-category-name" placeholder="Category Name" required />
+                            </div>
+                            <div class="col-12">
+                                <ul class="actions">
+                                    <li><button type="submit" class="button primary">Add Category</button></li>
+                                    <li><button type="button" class="button cancel-modal" data-modal="add-category-modal">Cancel</button></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Modal for adding new subcategory -->
+            <div id="add-subcategory-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close-modal" data-modal="add-subcategory-modal">&times;</span>
+                    <h4>Add New Subcategory</h4>
+                    <form id="add-subcategory-form">
+                        <input type="hidden" id="subcategory-parent-category" name="parent_category" />
+                        <div class="row gtr-uniform">
+                            <div class="col-12">
+                                <input type="text" name="new_subcategory_name" id="new-subcategory-name" placeholder="Subcategory Name" required />
+                            </div>
+                            <div class="col-12">
+                                <ul class="actions">
+                                    <li><button type="submit" class="button primary">Add Subcategory</button></li>
+                                    <li><button type="button" class="button cancel-modal" data-modal="add-subcategory-modal">Cancel</button></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Modal for adding new prompt -->
+            <div id="add-prompt-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close-modal" data-modal="add-prompt-modal">&times;</span>
+                    <h4>Add New Prompt</h4>
+                    <form id="add-prompt-form">
+                        <input type="hidden" id="prompt-parent-category" name="parent_category" />
+                        <input type="hidden" id="prompt-parent-subcategory" name="parent_subcategory" />
+                        <div class="row gtr-uniform">
+                            <div class="col-12">
+                                <input type="number" name="new_prompt_number" id="new-prompt-number" placeholder="Prompt Number" required min="1" />
+                            </div>
+                            <div class="col-12">
+                                <textarea name="new_prompt_text" id="new-prompt-text" placeholder="Prompt Text" rows="4" required></textarea>
+                            </div>
+                            <div class="col-12">
+                                <ul class="actions">
+                                    <li><button type="submit" class="button primary">Add Prompt</button></li>
+                                    <li><button type="button" class="button cancel-modal" data-modal="add-prompt-modal">Cancel</button></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </section>
     </div>
 </div>
@@ -136,6 +208,53 @@
     .actions-container {
         margin-top: 2em;
     }
+    
+    .add-subcategory-btn, .add-prompt-btn {
+        margin-left: 1em;
+        font-size: 0.9em;
+        background-color: #f0f0f0;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 0.3em 0.6em;
+        cursor: pointer;
+    }
+    
+    .add-subcategory-btn:hover, .add-prompt-btn:hover {
+        background-color: #e0e0e0;
+    }
+    
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.4);
+    }
+    
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 50%;
+        border-radius: 5px;
+    }
+    
+    .close-modal {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    
+    .close-modal:hover {
+        color: black;
+    }
 </style>
 {% endblock %}
 
@@ -162,8 +281,6 @@
         
         // Form submission
         document.getElementById('prompts-form').addEventListener('submit', function(e) {
-            // You can add validation here if needed
-            
             // Show saving indicator
             const submitButton = this.querySelector('input[type="submit"]');
             const originalValue = submitButton.value;
@@ -176,6 +293,168 @@
                 submitButton.value = originalValue;
                 submitButton.disabled = false;
             }, 2000);
+        });
+        
+        // Modal functionality
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            // Reset form if needed
+            const form = document.getElementById(modalId).querySelector('form');
+            if (form) form.reset();
+        }
+        
+        // Close modal buttons
+        document.querySelectorAll('.close-modal, .cancel-modal').forEach(button => {
+            button.addEventListener('click', function() {
+                const modalId = this.getAttribute('data-modal');
+                closeModal(modalId);
+            });
+        });
+        
+        // Add Category button
+        document.getElementById('add-category-btn').addEventListener('click', function() {
+            openModal('add-category-modal');
+        });
+        
+        // Add Subcategory buttons
+        document.querySelectorAll('.add-subcategory-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const category = this.getAttribute('data-category');
+                document.getElementById('subcategory-parent-category').value = category;
+                openModal('add-subcategory-modal');
+            });
+        });
+        
+        // Add Prompt buttons
+        document.querySelectorAll('.add-prompt-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const category = this.getAttribute('data-category');
+                const subcategory = this.getAttribute('data-subcategory');
+                document.getElementById('prompt-parent-category').value = category;
+                document.getElementById('prompt-parent-subcategory').value = subcategory;
+                
+                // Find the highest prompt number in this subcategory and suggest next number
+                const promptItems = this.closest('.subcategory').querySelectorAll('.prompt-number');
+                let maxNumber = 0;
+                promptItems.forEach(item => {
+                    const num = parseInt(item.textContent);
+                    if (!isNaN(num) && num > maxNumber) maxNumber = num;
+                });
+                document.getElementById('new-prompt-number').value = maxNumber + 1;
+                
+                openModal('add-prompt-modal');
+            });
+        });
+        
+        // Add Category Form Submission
+        document.getElementById('add-category-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const categoryName = document.getElementById('new-category-name').value.trim();
+            if (!categoryName) return;
+            
+            // Submit via fetch API to create new category
+            fetch('/add_category', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ category_name: categoryName })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Reload the page to show the new category
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to add category'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while adding the category');
+            });
+        });
+        
+        // Add Subcategory Form Submission
+        document.getElementById('add-subcategory-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const parentCategory = document.getElementById('subcategory-parent-category').value;
+            const subcategoryName = document.getElementById('new-subcategory-name').value.trim();
+            if (!parentCategory || !subcategoryName) return;
+            
+            // Submit via fetch API to create new subcategory
+            fetch('/add_subcategory', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    category: parentCategory,
+                    subcategory_name: subcategoryName
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Reload the page to show the new subcategory
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to add subcategory'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while adding the subcategory');
+            });
+        });
+        
+        // Add Prompt Form Submission
+        document.getElementById('add-prompt-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const parentCategory = document.getElementById('prompt-parent-category').value;
+            const parentSubcategory = document.getElementById('prompt-parent-subcategory').value;
+            const promptNumber = document.getElementById('new-prompt-number').value;
+            const promptText = document.getElementById('new-prompt-text').value.trim();
+            
+            if (!parentCategory || !parentSubcategory || !promptNumber || !promptText) return;
+            
+            // Submit via fetch API to create new prompt
+            fetch('/add_prompt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    category: parentCategory,
+                    subcategory: parentSubcategory,
+                    prompt_number: promptNumber,
+                    prompt_text: promptText
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Reload the page to show the new prompt
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to add prompt'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while adding the prompt');
+            });
+        });
+        
+        // Close modals when clicking outside of them
+        window.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal')) {
+                closeModal(event.target.id);
+            }
         });
     });
 </script>

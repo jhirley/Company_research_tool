@@ -9,7 +9,7 @@ from models.models import api_keys
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
-@router.get("/api/status")
+@router.get("/status")
 async def api_status():
     # Return the status of the API and available services
     return {
@@ -17,14 +17,8 @@ async def api_status():
         "gemini": bool(api_keys["gemini"])
     }
 
-@router.get("/diagnostics", response_class=HTMLResponse)
-async def diagnostics_page(request: Request):
-    return templates.TemplateResponse(
-        "diagnostics.html", 
-        {"request": request}
-    )
 
-@router.get("/api/test")
+@router.get("/test")
 async def test_api():
     # Test the API connections and return diagnostic information
     results = {}

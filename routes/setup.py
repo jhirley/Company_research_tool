@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, Form, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from models.models import api_keys, current_companies
 
@@ -24,14 +24,26 @@ async def setup(
     gemini_key: str = Form(None),
     companies: str = Form(...)
 ):
-    # Update API keys
+    # Update API keys - at least one API key is required
+    if not openai_key and not gemini_key:
+        return JSONResponse(
+            status_code=400,
+            content={"error": "At least one API key (OpenAI or Gemini) is required."}
+        )
+    
     if openai_key:
         api_keys["openai"] = openai_key
     if gemini_key:
         api_keys["gemini"] = gemini_key
     
-    # Update companies list
-    company_list = [c.strip() for c in companies.split(",") if c.strip()]
+    # Update companies list - companies are required
+    company_list = [c.strip() for c in companies.splitlines() if c.strip()]
+    if not company_list:
+        return JSONResponse(
+            status_code=400,
+            content={"error": "At least one company name is required."}
+        )
+    
     current_companies.clear()
     current_companies.extend(company_list)
     

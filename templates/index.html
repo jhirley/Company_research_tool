@@ -26,16 +26,24 @@
                     <div class="col-6 col-12-mobile">
                         <h3>OpenAI API Key</h3>
                         <input name="openai_key" placeholder="OpenAI API Key" value="{{ api_keys.openai }}" />
-                        <p class="small">Required for GPT-4 research</p>
+                        <div class="api-info" style="margin-top: 5px; line-height: 1.2;">
+                            <p class="small" style="margin: 0;">Required for GPT-4 research</p>
+                            <p class="small" style="margin: 0;">Get your API key from <a href="https://platform.openai.com/" target="_blank">OpenAI</a></p>
+                            <p class="small" style="margin: 0;">Video on creating API key: <a href="https://www.youtube.com/watch?v=OB99E7Y1cMA" target="_blank">OpenAI</a></p>
+                        </div>
                     </div>
                     <div class="col-6 col-12-mobile">
                         <h3>Gemini API Key</h3>
                         <input name="gemini_key" placeholder="Gemini API Key" value="{{ api_keys.gemini }}" />
-                        <p class="small">Required for Gemini research</p>
+                        <div class="api-info" style="margin-top: 5px; line-height: 1.2;">
+                            <p class="small" style="margin: 0;">Required for Gemini research</p>
+                            <p class="small" style="margin: 0;">Get your API key from <a href="https://aistudio.google.com" target="_blank">Gemini</a></p>
+                            <p class="small" style="margin: 0;">Video on creating API key: <a href="https://www.youtube.com/watch?v=T1BTyo1A4Ww" target="_blank">Gemini</a></p>
+                        </div>
                     </div>
                     <div class="col-12">
                         <h3>Companies to Research</h3>
-                        <textarea name="companies" placeholder="Enter company names, separated by commas">{{ companies|join(', ') }}</textarea>
+                        <textarea name="companies" placeholder="Enter company names, one per line" rows="5">{{ companies|join('\n') }}</textarea>
                     </div>
                     <div class="col-12">
                         <ul class="actions">
@@ -57,21 +65,21 @@
             <div class="row features">
                 <section class="col-4 col-12-narrower feature">
                     <div class="image-wrapper first">
-                        <img src="/static/images/research.jpg" alt="Research" class="image featured" onerror="this.onerror=null; this.src='/static/assets/css/images/pic01.jpg'" />
+                        <img src="/static/images/research.jpg" alt="Research" class="image featured" />
                     </div>
                     <h3>Comprehensive Research</h3>
                     <p>Conduct thorough research on companies using AI-powered insights from various sources.</p>
                 </section>
                 <section class="col-4 col-12-narrower feature">
                     <div class="image-wrapper">
-                        <img src="/static/images/customize.jpg" alt="Customize" class="image featured" onerror="this.onerror=null; this.src='/static/assets/css/images/pic02.jpg'" />
+                        <img src="/static/images/customize.jpg" alt="Customize" class="image featured" />
                     </div>
                     <h3>Customizable Prompts</h3>
                     <p>Edit and customize research prompts to tailor your research to specific needs and requirements.</p>
                 </section>
                 <section class="col-4 col-12-narrower feature">
                     <div class="image-wrapper">
-                        <img src="/static/images/export.jpg" alt="Export" class="image featured" onerror="this.onerror=null; this.src='/static/assets/css/images/pic03.jpg'" />
+                        <img src="/static/images/export.jpg" alt="Export" class="image featured" />
                     </div>
                     <h3>Export Results</h3>
                     <p>Export your research results with sources to ensure accuracy and eliminate hallucinations.</p>
