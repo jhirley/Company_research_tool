@@ -669,11 +669,22 @@
                 const progressText = progressContainer.querySelector('.progress-text');
                 progressText.textContent = `Processing company ${completedCompanies + 1} of ${totalCompanies}: ${company}`;
                 
-                // Add company to the list
+                // Add company to the list with its own progress bar
                 const companyList = progressContainer.querySelector('.company-list');
                 const companyItem = document.createElement('li');
-                companyItem.innerHTML = `<strong>${company}</strong>: <span class="status">In progress...</span>`;
+                companyItem.innerHTML = `
+                    <strong>${company}</strong>: <span class="status">In progress...</span>
+                    <div class="company-progress-bar-container" style="margin-top: 5px; height: 10px; background-color: #f0f0f0; border-radius: 5px; overflow: hidden;">
+                        <div class="company-progress-bar" style="width: 0%; height: 100%; background-color: #4caf50;"></div>
+                    </div>
+                `;
                 companyList.appendChild(companyItem);
+                
+                // Clear research history for this company to start fresh
+                if (researchHistory[company]) {
+                    console.log(`Clearing research history for ${company} before starting new research`);
+                    researchHistory[company] = [];
+                }
                 
                 try {
                     // Make API request for this company
@@ -728,6 +739,12 @@
                                 
                                 // Handle different event types
                                 if (eventData.type === 'progress') {
+                                    // Update company-specific progress bar
+                                    const companyProgressBar = companyItem.querySelector('.company-progress-bar');
+                                    if (companyProgressBar && eventData.percent) {
+                                        companyProgressBar.style.width = `${eventData.percent}%`;
+                                    }
+                                    
                                     // Add new results to the live results list
                                     if (eventData.batch_results) {
                                         const successList = progressContainer.querySelector('.success-list');
@@ -758,6 +775,12 @@
                                 } else if (eventData.type === 'complete') {
                                     // Store the final data for processing after the stream ends
                                     finalData = eventData;
+                                    
+                                    // Set company progress bar to 100%
+                                    const companyProgressBar = companyItem.querySelector('.company-progress-bar');
+                                    if (companyProgressBar) {
+                                        companyProgressBar.style.width = '100%';
+                                    }
                                 }
                             } catch (parseError) {
                                 console.error('Error parsing event data:', parseError, line);
@@ -817,9 +840,6 @@
                     // Sync the updated history with the backend
                     await syncResearchHistory(company);
                     
-                    // Update history list in the UI
-                    updateHistoryList();
-                    
                     // Update company status
                     companyItem.querySelector('.status').textContent = `Complete - ${data.total_successful} successful, ${data.total_errors} errors`;
                     
@@ -835,13 +855,13 @@
                     
                     // Export results for this company in all formats
                     try {
-                        // Export to Word
+                        // Export to Word - explicitly using the company name
                         await exportResults('word', company);
-                        // Export to PDF
+                        // Export to PDF - explicitly using the company name
                         await exportResults('pdf', company);
-                        // Export to Excel
+                        // Export to Excel - explicitly using the company name
                         await exportResults('excel', company);
-                        // Export to PowerPoint
+                        // Export to PowerPoint - explicitly using the company name
                         await exportResults('pptx', company);
                         
                         companyItem.querySelector('.status').textContent += " (Exports complete)";
@@ -894,8 +914,8 @@
     });
     
     // Function to export results in different formats
-    async function exportResults(format) {
-        const company = document.getElementById('company').value;
+    async function exportResults(format, specificCompany = null) {
+        const company = specificCompany || document.getElementById('company').value;
         console.log(`Exporting for company: ${company} in format: ${format}`);
         console.log(`Research history for company:`, researchHistory[company]);
         
