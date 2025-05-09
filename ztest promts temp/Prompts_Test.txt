@@ -1,6 +1,0 @@
-### AI Strategy
-1. Research the key components and objectives of {Customer Name}'s AI strategy. How do these align with their overall business goals? Include details on AI frameworks, machine learning models, data sources, and specific use cases.
-2. Identify the platforms and partners integral to {Customer Name}'s AI initiatives. Specify vendors and their roles. Include information on cloud providers, AI development platforms, integration partners, and any proprietary technologies used.
-
-### Data Center Strategy
-1. Provide the physical addresses of {Customer Name}'s data centers. Include information on the size, capacity, tier classification, and any certifications (e.g., ISO, Uptime Institute) of each data center.
